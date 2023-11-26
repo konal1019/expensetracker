@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Expense Tracker</h1>
+
+<form id="expenseForm">
+    <label for="expenseAmount">Amount:</label>
+    <input type="number" id="expenseAmount" required>
+    <label for="expenseDate">Date:</label>
+    <input type="date" id="expenseDate" required>
+    <button type="button" onclick="addExpense()">Add Expense</button>
+</form>
+
+<table id="expenseTable">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Expense entries will go here -->
+    </tbody>
+</table>
+
+<div id="totals">
+    <p>Weekly Total: <span id="weeklyTotal">0</span></p>
+    <p>Monthly Total: <span id="monthlyTotal">0</span></p>
+    <p>Yearly Total: <span id="yearlyTotal">0</span></p>
+</div>
+
+<script>
+    // Load expenses from local storage on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadExpenses();
+        calculateTotals();
+    });
+
+    function addExpense() {
+        const amount = parseFloat(document.getElementById('expenseAmount').value);
+        const date = document.getElementById('expenseDate').value;
+
+        if (isNaN(amount) || amount <= 0 || !date) {
+            alert('Please enter a valid amount and date.');
+            return;
+        }
+
+        const table = document.getElementById('expenseTable').getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow(table.rows.length);
+        const dateCell = newRow.insertCell(0);
+        const amountCell = newRow.insertCell(1);
+
+        dateCell.innerHTML = date;
+        amountCell.innerHTML = amount;
+
+        // Save expenses to local storage
+        saveExpenses();
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        const tableRows = document.getElementById('expenseTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        let weeklyTotal = 0;
+        let monthlyTotal = 0;
+        let yearlyTotal = 0;
+
+        const currentDate = new Date();
+
+        for (let i = 0; i < tableRows.length; i++) {
+            const cells = tableRows[i].getElementsByTagName('td');
+            const date = new Date(cells[0].innerHTML);
+            const amount = parseFloat(cells[1].innerHTML);
+
+            if (isNaN(amount) || amount <= 0) {
+                continue;
+            }
+
+            // Calculate weekly total
+            const oneWeekAgo = new Date(currentDate);
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            if (date >= oneWeekAgo) {
+                weeklyTotal += amount;
+            }
+
+            // Calculate monthly total
+            const oneMonthAgo = new Date(currentDate);
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            if (date >= oneMonthAgo) {
+                monthlyTotal += amount;
+            }
+
+            // Calculate yearly total
+            const oneYearAgo = new Date(currentDate);
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+            if (date >= oneYearAgo) {
+                yearlyTotal += amount;
+            }
+        }
+
+        document.getElementById('weeklyTotal').textContent = weeklyTotal.toFixed(2);
+        document.getElementById('monthlyTotal').textContent = monthlyTotal.toFixed(2);
+        document.getElementById('yearlyTotal').textContent = yearlyTotal.toFixed(2);
+    }
+
+    function saveExpenses() {
+        const tableRows = document.getElementById('expenseTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const expenses = [];
+
+        for (let i = 0; i < tableRows.length; i++) {
+            const cells = tableRows[i].getElementsByTagName('td');
+            const date = cells[0].innerHTML;
+            const amount = cells[1].innerHTML;
+
+            if (date && amount) {
+                expenses.push({ date, amount });
+            }
+        }
+
+        // Save expenses to local storage
+        localStorage.setItem('expenses', JSON.stringify(expenses));
+    }
+
+    function loadExpenses() {
+        const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        const table = document.getElementById('expenseTable').getElementsByTagName('tbody')[0];
+
+        // Load expenses from local storage
+        expenses.forEach(expense => {
+            const newRow = table.insertRow(table.rows.length);
+            const dateCell = newRow.insertCell(0);
+            const amountCell = newRow.insertCell(1);
+
+            dateCell.innerHTML = expense.date;
+            amountCell.innerHTML = expense.amount;
+        });
+    }
+</script>
+
+</body>
+</html>

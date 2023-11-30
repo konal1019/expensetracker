@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker</title>
-    //CSS 
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,13 +35,23 @@
     <input type="number" id="expenseAmount" required>
     <label for="expenseDate">Date:</label>
     <input type="date" id="expenseDate" required>
+    <label for="expenseCause">Cause:</label>
+    <input type="text" id="expenseCause" required>
     <button type="button" onclick="addExpense()">Add Expense</button>
 </form>
+
+<div id="totals">
+    <p>Weekly Total: <span id="weeklyTotal">0</span></p>
+    <p>Monthly Total: <span id="monthlyTotal">0</span></p>
+    <p>Yearly Total: <span id="yearlyTotal">0</span></p>
+</div>
+
 
 <table id="expenseTable">
     <thead>
         <tr>
             <th>Date</th>
+            <th>Cause</th>
             <th>Amount</th>
         </tr>
     </thead>
@@ -50,12 +59,6 @@
         <!-- Expense entries will go here -->
     </tbody>
 </table>
-
-<div id="totals">
-    <p>Weekly Total: <span id="weeklyTotal">0</span></p>
-    <p>Monthly Total: <span id="monthlyTotal">0</span></p>
-    <p>Yearly Total: <span id="yearlyTotal">0</span></p>
-</div>
 
 <script>
     // Load expenses from local storage on page load
@@ -67,18 +70,21 @@
     function addExpense() {
         const amount = parseFloat(document.getElementById('expenseAmount').value);
         const date = document.getElementById('expenseDate').value;
+        const cause = document.getElementById('expenseCause').value;
 
-        if (isNaN(amount) || amount <= 0 || !date) {
-            alert('Please enter a valid amount and date.');
+        if (isNaN(amount) || amount <= 0 || !date || !cause) {
+            alert('Please enter valid amount, date, and cause.');
             return;
         }
 
         const table = document.getElementById('expenseTable').getElementsByTagName('tbody')[0];
         const newRow = table.insertRow(table.rows.length);
         const dateCell = newRow.insertCell(0);
-        const amountCell = newRow.insertCell(1);
+        const causeCell = newRow.insertCell(1);
+        const amountCell = newRow.insertCell(2);
 
         dateCell.innerHTML = date;
+        causeCell.innerHTML = cause;
         amountCell.innerHTML = amount;
 
         // Save expenses to local storage
@@ -97,7 +103,7 @@
         for (let i = 0; i < tableRows.length; i++) {
             const cells = tableRows[i].getElementsByTagName('td');
             const date = new Date(cells[0].innerHTML);
-            const amount = parseFloat(cells[1].innerHTML);
+            const amount = parseFloat(cells[2].innerHTML);
 
             if (isNaN(amount) || amount <= 0) {
                 continue;
@@ -137,10 +143,11 @@
         for (let i = 0; i < tableRows.length; i++) {
             const cells = tableRows[i].getElementsByTagName('td');
             const date = cells[0].innerHTML;
-            const amount = cells[1].innerHTML;
+            const cause = cells[1].innerHTML;
+            const amount = cells[2].innerHTML;
 
-            if (date && amount) {
-                expenses.push({ date, amount });
+            if (date && cause && amount) {
+                expenses.push({ date, cause, amount });
             }
         }
 
@@ -156,9 +163,11 @@
         expenses.forEach(expense => {
             const newRow = table.insertRow(table.rows.length);
             const dateCell = newRow.insertCell(0);
-            const amountCell = newRow.insertCell(1);
+            const causeCell = newRow.insertCell(1);
+            const amountCell = newRow.insertCell(2);
 
             dateCell.innerHTML = expense.date;
+            causeCell.innerHTML = expense.cause;
             amountCell.innerHTML = expense.amount;
         });
     }
@@ -166,3 +175,4 @@
 
 </body>
 </html>
+
